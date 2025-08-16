@@ -140,12 +140,12 @@
         }
     };
 
-    // 更精确的拦截模式分类
+    // 更精确的拦截模式分类 - 针对Cline兼容性优化
     const TELEMETRY_PATTERNS = [
         //"report-feature-vector",    // 特征向量报告
         "record-session-events",    // 会话事件记录
         "report-error",            // 错误报告
-        "client-metrics",          // 客户端指标
+        //"client-metrics",          // 客户端指标 - 已移至ESSENTIAL_ENDPOINTS（修复Cline CloudService）
         "record-request-events",   // 请求事件记录
         "record-user-events",      // 用户操作事件
         "record-preference-sample", // 用户偏好数据
@@ -154,17 +154,17 @@
         "next-edit-feedback",      // 反馈
         "analytics",               // 分析数据
         "telemetry",              // 遥测数据
-        "tracking",               // 跟踪数据
+        // "tracking",               // 跟踪数据 - 已移除，避免误拦截Cline API
         //"metrics",                // 指标数据
-        "usage",                  // 使用数据
-        "stats",                  // 统计数据
-        "event",                  // 事件数据
-        "collect",                // 收集数据
-        "gather",                 // 聚集数据
-        "submit",                 // 提交数据
-        "track",                  // 跟踪数据
-        "monitor",                // 监控数据
-        "observe"                 // 观察数据
+        "usage-statistics",        // 使用统计数据（更精确）
+        "user-stats",             // 用户统计数据（更精确）
+        "event-logging",          // 事件日志（更精确）
+        "data-collection",        // 数据收集（更精确）
+        "data-gathering",         // 数据聚集（更精确）
+        "data-submission",        // 数据提交（更精确）
+        // "track",                  // 跟踪数据 - 已移除，避免误拦截
+        "monitoring-data",        // 监控数据（更精确）
+        "observation-data"        // 观察数据（更精确）
         // 注意：subscription-info 已移至 ESSENTIAL_ENDPOINTS，作为必要端点保护
     ];
 
@@ -175,13 +175,13 @@
         "/record-request-events",      // 请求事件记录端点
         "/record-user-events",         // 用户操作事件端点
         "/record-preference-sample",   // 用户偏好数据端点
-        "/client-metrics",             // 客户端指标端点
+        //"/client-metrics",             // 客户端指标端点 - 已移至ESSENTIAL_ENDPOINTS（修复Cline CloudService）
         "/chat-feedback",              // 聊天反馈端点
         "/completion-feedback",        // 代码补全反馈端点
         "/next-edit-feedback",         // 下一步编辑反馈端点
         "/analytics",                  // 分析数据端点
         "/telemetry",                  // 遥测数据端点
-        "/tracking",                   // 跟踪数据端点
+        //"/tracking",                   // 跟踪数据端点 - 已移除（误拦截Cline Gemini API）
         //"/metrics",                    // 指标数据端点
         "/usage",                      // 使用数据端点
         "/stats",                      // 统计数据端点
@@ -216,7 +216,20 @@
         "codebase-upload",      // 代码库上传
         "file-sync",             // 文件同步
         "is-user-configured",   // 远程agent配置检查
-        "list-repos"             // 远程agent仓库列表
+        "list-repos",            // 远程agent仓库列表
+        // Cline插件CloudService相关端点（修复CloudService not initialized错误）
+        "d16.api.augmentcode.com",  // Cline CloudService API域名
+        "client-metrics",           // CloudService初始化必需端点
+        "users/me",                 // Cline用户信息端点
+        "api/v1/users/me",         // Cline用户信息完整路径
+        // Cline AI模型通信相关端点（修复Gemini API拦截问题）
+        "clawcloudrun.com",        // Cline代理服务域名
+        "nlkxyddsfbdf.ap-southeast-1.clawcloudrun.com", // Cline具体代理域名
+        "/proxy/gemini/",          // Gemini API代理路径
+        "streamGenerateContent",   // 流式内容生成API
+        "generateContent",         // 内容生成API
+        "/v1beta/models/",         // Gemini模型API路径
+        "gemini-2.5-pro"          // Gemini模型名称
     ];
 
     // 代码索引相关模式（白名单）
@@ -281,6 +294,7 @@
     console.log(`[AugmentCode拦截器] 调试模式: ${INTERCEPTOR_CONFIG.debugMode ? '已启用' : '已禁用'}`);
     console.log(`[AugmentCode拦截器] 必要端点保护: ${ESSENTIAL_ENDPOINTS.length} 个端点`);
     console.log(`[AugmentCode拦截器] 🎭 特征向量伪造器: ${INTERCEPTOR_CONFIG.dataProtection.enableFeatureVectorSpoofer ? '已启用' : '已禁用'} (42个特征向量)`);
+    console.log(`[AugmentCode拦截器] 🔧 Cline完整支持: 已启用 (CloudService + Gemini API)`);
 
     // ==================== 1.5. 系统信息生成器 ====================
 
